@@ -1,0 +1,33 @@
+sensor.living_room_lux:
+  friendly_name: Lux
+sensor.living_room_temperature:
+  friendly_name: Salon
+
+switch.qubino_zmnhjd1_flush_dimmer_pilot_wire_switch:
+  friendly_name: Chauffage Chambre
+  icon: mdi:radiator
+light.qubino_zmnhjd1_flush_dimmer_pilot_wire_level:
+  friendly_name: Chauffage Chambre
+  icon: mdi:radiator
+
+sensor.philio_technology_corporation_phpat02beu_multisensor_2in1_temperature:
+  friendly_name: Chambre
+sensor.philio_technology_corporation_phpat02beu_multisensor_2in1_relative_humidity:
+  friendly_name: Humidity
+
+sensor.dark_sky_apparent_temperature:
+  friendly_name: Apparent Temperature
+sensor.dark_sky_daily_high_apparent_temperature:
+  friendly_name: Daily High Temperature
+sensor.dark_sky_daily_low_apparent_temperature:
+  friendly_name: Daily Low Temperature
+sensor.dark_sky_hourly_summary:
+  friendly_name: Day summary
+sensor.dark_sky_summary:
+  friendly_name: Weather
+sensor.dark_sky_temperature:
+  friendly_name: Temperature
+sensor.dark_sky_wind_speed:
+  friendly_name: Wind Speed
+sensor.dark_sky_daily_summary:
+  friendly_name: 7-day weather

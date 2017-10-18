@@ -1,0 +1,83 @@
+- name: living_room_normal
+  entities:
+      light.coin_salon:
+          state: on
+          transition: 5
+          brightness: 254
+          xy_color: [ 0.4571, 0.4123 ]
+      light.commode:
+          state: on
+          transition: 5
+          brightness: 254
+          xy_color: [ 0.4571, 0.4123 ]
+
+- name: living_room_normal_fast
+  entities:
+      light.coin_salon:
+          state: on
+          transition: 2
+          brightness: 254
+          xy_color: [ 0.4571, 0.4123 ]
+      light.commode:
+          state: on
+          transition: 2
+          brightness: 254
+          xy_color: [ 0.4571, 0.4123 ]
+
+- name: living_room_at_night
+  entities:
+      light.coin_salon:
+          state: on
+          transition: 5
+          brightness: 170
+          xy_color: [ 0.4783, 0.4139 ]
+      light.commode:
+          state: on
+          transition: 5
+          brightness: 180
+          xy_color: [ 0.4571, 0.4123 ]
+
+- name: living_room_cinema
+  entities:
+      light.coin_salon:
+          state: on
+          transition: 5
+          brightness: 90
+          xy_color: [ 0.4783, 0.4139 ]
+      light.commode:
+          state: on
+          transition: 5
+          brightness: 90
+          xy_color: [ 0.4571, 0.4123 ]
+
+- name: living_room_red
+  entities:
+      light.coin_salon:
+          state: on
+          transition: 5
+          brightness: 125
+          color_name: 'red'
+      light.commode:
+          state: on
+          transition: 5
+          brightness: 125
+          color_name: 'red'
+
+- name: lights_off
+  entities:
+      light.all_hue_lights:
+          state: off
+          transition: 2
+
+- name: living_room_off
+  entities:
+      light.coin_salon:
+          state: off
+          transition: 2
+      light.commode:
+          state: off
+          transition: 2
+      light.plafonnier:
+          state: off
+          transition: 2
+

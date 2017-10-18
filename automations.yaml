@@ -1,0 +1,253 @@
+- id: flash_lights_in_the_morning
+  alias: Reminder to close windows in the morning after 30min
+  trigger:
+    - platform: state
+      entity_id: input_boolean.sleep_mode
+      to: 'off'
+  action:
+    - delay: 00:30:00
+    - service: light.turn_on
+      data:
+        entity_id: light.salon
+        flash: short
+
+- id: kodi_paused
+  alias: Media player paused/stopped
+  trigger:
+  - entity_id: media_player.kodi
+    from: playing
+    platform: state
+  condition:
+  - condition: numeric_state
+    entity_id: sun.sun
+    value_template: '{{ state.attributes.elevation }}'
+    below: 9
+  action:
+    service: scene.turn_on
+    entity_id: scene.living_room_at_night
+
+- id: kodi_playing
+  alias: Media player playing
+  trigger:
+  - entity_id: media_player.kodi
+    platform: state
+    to: playing
+  condition:
+  - condition: numeric_state
+    entity_id: sun.sun
+    value_template: '{{ state.attributes.elevation }}'
+    below: 9
+  action:
+    service: scene.turn_on
+    entity_id: scene.living_room_cinema
+
+- id: ps4_starts_night
+  alias: PS 4 starts (at night)
+  trigger:
+    platform: state
+    entity_id: device_tracker.ps4
+    to: 'home'
+  condition:
+  - condition: numeric_state
+    entity_id: sun.sun
+    value_template: '{{ state.attributes.elevation }}'
+    below: 9
+  action:
+  - service: light.turn_off 
+    entity_id: light.plafonnier
+  - service: scene.turn_on
+    entity_id: scene.living_room_cinema
+
+- id: ps4_starts_day
+  alias: PS 4 starts (daytime)
+  trigger:
+    platform: state
+    entity_id: device_tracker.ps4
+    to: 'home'
+  condition:
+  - condition: numeric_state
+    entity_id: sun.sun
+    value_template: '{{ state.attributes.elevation }}'
+    above: 9
+  action:
+  - service: light.turn_off 
+    entity_id: light.plafonnier
+  - service: scene.turn_on
+    entity_id: scene.living_room_normal
+
+- id: kodi_playing_day
+  alias: Media player playing during day
+  trigger:
+  - entity_id: media_player.kodi
+    platform: state
+    to: playing
+  action:
+  - service: light.turn_off 
+    entity_id: light.plafonnier
+
+- id: mild_lights_after_dark
+  alias: Less bright lights once the sun begins to set
+  trigger:
+    platform: numeric_state
+    entity_id: sun.sun
+    value_template: '{{ state.attributes.elevation }}'
+    below: 9
+  condition:
+    - condition: state
+      entity_id: light.commode
+      state: 'on'
+  action:
+    service: scene.turn_on
+    entity_id: scene.living_room_at_night
+
+- id: lights_on_when_home_day
+  alias: Turn on lights when anyone gets home (day)
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.living_room_motion
+      to: 'on'
+      from: 'off'
+  condition:
+    - condition: time
+      after: '08:00:00'
+      before: '19:00:00'
+    - condition: state
+      entity_id: light.commode
+      state: 'off'
+    - condition: state
+      entity_id: input_boolean.sleep_mode
+      state: 'off'
+  action:
+    - service: scene.turn_on
+      entity_id: scene.living_room_normal_fast
+    - service: notify.pushbullet
+      data_template:
+        title: "Someone home"
+        message: "Sensor triggered at {{ states.sensor.date__time.state }}"
+
+- id: lights_on_when_home_night
+  alias: Turn on lights when anyone gets home (night)
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.living_room_motion
+      to: 'on'
+      from: 'off'
+  condition:
+    - condition: time
+      after: '19:00:00'
+      before: '00:08:00'
+    - condition: state
+      entity_id: light.commode
+      state: 'off'
+    - condition: state
+      entity_id: input_boolean.sleep_mode
+      state: 'off'
+  action:
+    - service: scene.turn_on
+      entity_id: scene.living_room_normal
+    - service: notify.pushbullet
+      data_template:
+        title: "Someone home"
+        message: "Sensor triggered at {{ states.sensor.date__time.state }}"
+
+- id: red_light_at_night
+  alias: "Presence detected during night, light red lights"
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.living_room_motion
+      to: 'on'
+      from: 'off'
+  condition:
+    - condition: time
+      after: '22:00:00'
+      before: '07:00:00'
+    - condition: state
+      entity_id: light.commode
+      state: 'off'
+    - condition: state
+      entity_id: input_boolean.sleep_mode
+      state: 'on'
+  action:
+    - service: light.turn_on 
+      entity_id: light.commode
+      data:
+        brightness: 125
+        color_name: 'red'
+        transition: 5
+    - delay: 00:05:00
+    - service: light.turn_off 
+      entity_id: light.commode
+      data:
+        transition: 300
+
+- id: turn_off_lights_when_noone_home
+  alias: Turn off the lights when no one is home
+  trigger:
+    platform: state
+    entity_id: device_tracker.lucas_oneplus3t
+    to: 'not_home'
+    for:
+      hours: 0
+      minutes: 10
+      seconds: 0
+  condition:
+    - condition: state
+      entity_id: binary_sensor.living_room_motion
+      state: 'off'
+      for:
+        hours: 0
+        minutes: 5
+        seconds: 0
+  action:
+    - service: scene.turn_on
+      entity_id: scene.lights_off
+    - service: notify.pushbullet
+      data_template:
+        title: "Lights turned off"
+        message: "Turned off the lights at {{ states.sensor.date__time.state }}"
+
+- id: begin_sleep_mode
+  alias: "Begin sleep mode when turning on bedroom at night"
+  trigger:
+    platform: state
+    entity_id: light.chambre
+    to: 'on'
+  condition:
+    - condition: time
+      after: '22:00:00'
+      before: '08:00:00'
+  action:
+    - service: input_boolean.turn_on
+      data:
+        entity_id: input_boolean.sleep_mode
+    - service: scene.turn_on
+      entity_id: scene.living_room_cinema
+    - delay: 00:02:00
+    - service: scene.turn_on
+      entity_id: scene.living_room_red
+    - delay: 00:02:00
+    - service: scene.turn_on
+      entity_id: scene.living_room_off
+
+- id: begin_morning_mode
+  alias: "Begin morning mode when entering living room in the morning"
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.living_room_motion
+      to: 'on'
+  condition:
+    - condition: time
+      after: '07:00:00'
+      before: '11:00:00'
+    - condition: state
+      entity_id: light.commode
+      state: 'off'
+  action:
+    - service: scene.turn_on
+      entity_id: scene.living_room_cinema
+    - delay: 00:00:10
+    - service: scene.turn_on
+      entity_id: scene.living_room_normal
+    - service: input_boolean.turn_off
+      data:
+        entity_id: input_boolean.sleep_mode

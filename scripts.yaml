@@ -1,0 +1,48 @@
+# plafonnier_off:
+#   alias: Plafonnier Off
+#   sequence:
+#   - alias: plafonnier_off
+#     data:
+#       entity_id: light.plafonnier
+#     service: light.turn_off
+# plafonnier_on:
+#   alias: Plafonnier On
+#   sequence:
+#   - alias: plafonnier_on
+#     data:
+#       entity_id: light.plafonnier
+#       brightness: 254
+#       color_temp: 363
+#     service: light.turn_on
+
+# record_commode:
+#   alias: Record commode status to slider
+#   sequence:
+#     - service: input_slider.select_value
+#       data_template:
+#         entity_id: input_slider.commode_brightness
+#         value: '{% if states.light.commode.state == "off" %}0{% else %}{{states.light.commode.attributes.brightness}}{% endif %}'
+
+# return_commode:
+#   alias: Return commode to recorded value
+#   sequence:
+#     - service: light.turn_on
+#       entity_id: light.commode
+#       data_template:
+#         brightness: '{{states.input_slider.commode_brightness.state | int}}'
+
+# record_coin_salon:
+#   alias: Record coin_salon status to slider
+#   sequence:
+#     - service: input_slider.select_value
+#       data_template:
+#         entity_id: input_slider.coin_salon_brightness
+#         value: '{% if states.light.coin_salon.state == "off" %}0{% else %}{{states.light.coin_salon.attributes.brightness}}{% endif %}'
+
+# return_coin_salon:
+#   alias: Return coin_salon to recorded value
+#   sequence:
+#     - service: light.turn_on
+#       entity_id: light.coin_salon
+#       data_template:
+#         brightness: '{{states.input_slider.coin_salon_brightness.state.brightness | int}}'

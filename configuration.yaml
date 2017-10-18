@@ -1,0 +1,188 @@
+homeassistant:
+  # Name of the location where Home Assistant is running
+  name: Home
+  # Location required to calculate the time the sun rises and sets
+  latitude: !secret lat
+  longitude: !secret long
+  # Impacts weather/sunrise data (altitude above sea level in meters)
+  elevation: !secret elevation
+  # metric for Metric, imperial for Imperial
+  unit_system: metric
+  # Pick yours from here: http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+  time_zone: Europe/Paris
+  # Customization file
+  customize: !include customize.yaml
+
+# Enables the frontend
+frontend:
+
+# Enables configuration UI
+config:
+
+http:
+  # Uncomment this to add a password (recommended!)
+  # api_password: PASSWORD
+  # Uncomment this if you are using SSL/TLS, running in Docker container, etc.
+  # base_url: example.duckdns.org:8123
+
+# Checks for available updates
+# Note: This component will send some information about your system to
+# the developers to assist with development of Home Assistant.
+# For more information, please see:
+# https://home-assistant.io/blog/2016/10/25/explaining-the-updater/
+updater:
+  # Optional, allows Home Assistant developers to focus on popular components.
+  # include_used_components: true
+
+# Discover some devices automatically
+discovery:
+
+# Allows you to issue voice commands from the frontend in enabled browsers
+# conversation:
+
+# Enables support for tracking state changes over time
+history:
+
+# View all events in a logbook
+logbook:
+
+# Track the sun
+sun:
+
+# Various sensors (weather, temperature, etc.)
+sensor:
+  - platform: darksky
+    api_key: !secret darksky_api
+    update_interval: '00:05'
+    monitored_conditions:
+      - summary
+      - icon
+      - temperature
+      - apparent_temperature
+      - wind_speed
+      - cloud_cover
+      - hourly_summary
+      - daily_summary
+      - temperature_max
+      - temperature_min
+
+  - platform: time_date
+    display_options:
+      - 'time'
+      - 'date'
+      - 'date_time'
+      - 'time_date'
+      - 'time_utc'
+
+  - platform: rest
+    resource: !secret hue_temperature_endpoint
+    value_template: '{% set intermediate_temp = value_json.state.temperature | float / 100 %} {% set intermediate_temp2 = intermediate_temp + 1.6 %} {{ intermediate_temp2 | round(1) }}'
+    unit_of_measurement: °C
+    name: 'Living Room Temperature'
+    scan_interval: 300
+
+  - platform: rest
+    resource: !secret hue_lux_endpoint
+    value_template: '{{ value_json.state.lightlevel }}'
+    unit_of_measurement: Lux
+    name: 'Living Room Lux'
+    scan_interval: 300
+
+  - platform: mqtt
+    state_topic: "owntracks/lucas/oneplus3t"
+    name: "Battery 3T"
+    unit_of_measurement: "%"
+    value_template: '{{ value_json.batt }}'
+
+binary_sensor:
+  - platform: rest
+    resource: !secret hue_motion_endpoint
+    value_template: '{{ value_json.state.presence }}'
+    name: 'Living Room Motion'
+    scan_interval: 2
+
+
+light:
+  - platform: hue
+    host: 192.168.0.10
+
+# Text to speech
+tts:
+  - platform: google
+
+media_player:
+ - platform: kodi
+   host: 192.168.0.40
+   username: !secret kodi_username
+   password: !secret kodi_password
+ - platform: mpd
+   host: 192.168.0.111
+   password: !secret mpd_password
+
+input_boolean:
+  sleep_mode:
+    name: Sleep mode
+    initial: off
+    icon: mdi:brightness-3
+
+device_tracker:
+  - platform: owntracks
+    max_gps_accuracy: 300
+  - platform: nmap_tracker
+    hosts: 192.168.0.43
+
+mqtt:
+  broker: 172.17.0.1
+  username: !secret mqtt_username
+  password: !secret mqtt_password
+
+zwave:
+  usb_path: /dev/ttyACM0
+
+zone:
+  - name: Home
+    latitude: !secret lat
+    longitude: !secret long
+    radius: 100
+    icon: mdi:home
+
+notify:
+  - name: pushbullet
+    platform: pushbullet
+    api_key: !secret pushbullet_api
+
+history_graph:
+  gr1:
+    name: Temperatures
+    entities:
+      - sensor.philio_technology_corporation_phpat02beu_multisensor_2in1_temperature
+      - sensor.living_room_temperature
+    hours_to_show: 48
+    refresh: 300
+
+recorder:
+  purge_interval: 2
+  purge_keep_days: 5
+  db_url: !secret recorder_endpoint
+
+climate:
+  - platform: generic_thermostat
+    name: Chambre
+    heater: switch.qubino_zmnhjd1_flush_dimmer_pilot_wire_switch
+    target_sensor: sensor.philio_technology_corporation_phpat02beu_multisensor_2in1_temperature
+    min_temp: 15
+    max_temp: 21
+    target_temp: 19
+    tolerance: 0.2
+    min_cycle_duration:
+      minutes: 10
+
+camera:
+  - platform: generic
+    still_image_url: !secret weather_map_endpoint
+    content_type: 'image/png'
+
+group: !include groups.yaml
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml

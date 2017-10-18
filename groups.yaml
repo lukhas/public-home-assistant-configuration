@@ -1,0 +1,87 @@
+## VIEWS
+default_view:
+  view: yes
+  icon: mdi:home
+  entities:
+    - group.weather
+    - group.lights
+    - group.temperatures
+    - device_tracker.lucas_oneplus3t
+    - sensor.battery_3t
+    - device_tracker.ps4
+    - sensor.philio_technology_corporation_phpat02beu_multisensor_2in1_relative_humidity
+    - sensor.philio_technology_corporation_phpat02beu_multisensor_2in1_temperature
+    - sensor.living_room_temperature
+    - climate.chambre
+    - media_player.kodi
+    - media_player.mpd
+    - camera.generic_camera
+
+config:
+  name: Config
+  view: yes
+  icon: mdi:settings
+  entities:
+    - group.my_automations
+    - group.all_switches
+    - light.qubino_zmnhjd1_flush_dimmer_pilot_wire_level
+    - input_boolean.sleep_mode
+    - climate.chambre
+
+## GROUPS
+
+scenes:
+  name: Scenes
+  view: no
+  entities:
+    - scene.living_room_normal
+    - scene.living_room_at_night
+    - scene.living_room_cinema
+    - scene.living_room_red
+
+temperatures:
+  name: Temperatures
+  view: no
+  entities:
+    - history_graph.temperatures
+
+lights:
+  name: Lights
+  view: no
+  entities:
+    - light.salon
+    - light.coin_salon
+    - light.commode
+    - light.plafonnier
+    - light.chambre
+
+my_automations:
+  name: Automations
+  view: no
+  entities:
+    - automation.begin_morning_mode_when_entering_living_room_in_the_morning
+    - automation.begin_sleep_mode_when_turning_on_bedroom_at_night
+    - automation.less_bright_lights_once_the_sun_begins_to_set
+    - automation.media_player_pausedstopped
+    - automation.media_player_playing
+    - automation.media_player_playing_during_day
+    - automation.presence_detected_during_night_light_red_lights
+    - automation.ps_4_starts_at_night
+    - automation.ps_4_starts_daytime
+    - automation.reminder_to_close_windows_in_the_morning_after_30min
+    - automation.turn_off_the_lights_when_no_one_is_home
+    - automation.turn_on_lights_when_anyone_gets_home_day
+    - automation.turn_on_lights_when_anyone_gets_home_night
+
+weather:
+  name: Météo
+  view: no
+  entities:
+    - sensor.dark_sky_temperature
+    - sensor.dark_sky_apparent_temperature
+    - sensor.dark_sky_daily_high_apparent_temperature
+    - sensor.dark_sky_daily_low_apparent_temperature
+    - sensor.dark_sky_summary
+    - sensor.dark_sky_hourly_summary
+    - sensor.dark_sky_wind_speed
+    - sensor.dark_sky_daily_summary
