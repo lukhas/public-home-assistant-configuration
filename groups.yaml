@@ -16,6 +16,8 @@ default_view:
     - media_player.kodi
     - media_player.mpd
     - camera.generic_camera
+    - group.humidity
+    - group.scenes
 
 config:
   name: Config
@@ -44,6 +46,12 @@ temperatures:
   view: no
   entities:
     - history_graph.temperatures
+
+humidity:
+  name: Humidity
+  view: no
+  entities:
+    - history_graph.humidity
 
 lights:
   name: Lights

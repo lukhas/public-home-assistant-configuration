@@ -159,6 +159,12 @@ history_graph:
       - sensor.living_room_temperature
     hours_to_show: 48
     refresh: 300
+  gr2:
+    name: Humidity
+    entities:
+      - sensor.philio_technology_corporation_phpat02beu_multisensor_2in1_relative_humidity
+    hours_to_show: 48
+    refresh: 300
 
 recorder:
   purge_interval: 2
