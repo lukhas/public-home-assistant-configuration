@@ -3,9 +3,12 @@ sensor.living_room_lux:
 sensor.living_room_temperature:
   friendly_name: Salon
 
+switch.besta_switch:
+  icon: mdi:lightbulb
+  
 switch.qubino_zmnhjd1_flush_dimmer_pilot_wire_switch:
-  friendly_name: Chauffage Chambre
-  icon: mdi:radiator
+  friendly_name: Switch Chauffage Chambre
+  icon: mdi:toggle-switch
 light.qubino_zmnhjd1_flush_dimmer_pilot_wire_level:
   friendly_name: Chauffage Chambre
   icon: mdi:radiator
@@ -31,3 +34,41 @@ sensor.dark_sky_wind_speed:
   friendly_name: Wind Speed
 sensor.dark_sky_daily_summary:
   friendly_name: 7-day weather
+
+# hide sensors cluttering the logbook
+binary_sensor.living_room_motion:
+  hidden: true
+binary_sensor.philio_technology_corporation_phpat02beu_multisensor_2in1_sensor:
+  hidden: true
+binary_sensor.qubino_zmnhjd1_flush_dimmer_pilot_wire_sensor:
+  hidden: true
+binary_sensor.qubino_zmnhjd1_flush_dimmer_pilot_wire_sensor_2:
+  hidden: true
+binary_sensor.qubino_zmnhjd1_flush_dimmer_pilot_wire_sensor_3:
+  hidden: true
+sensor.date:
+  hidden: true
+sensor.date__time:
+  hidden: true
+sensor.philio_technology_corporation_phpat02beu_multisensor_2in1_alarm_level:
+  hidden: true
+sensor.philio_technology_corporation_phpat02beu_multisensor_2in1_alarm_type:
+  hidden: true
+sensor.philio_technology_corporation_phpat02beu_multisensor_2in1_burglar:
+  hidden: true
+sensor.philio_technology_corporation_phpat02beu_multisensor_2in1_sourcenodeid:
+  hidden: true
+sensor.qubino_zmnhjd1_flush_dimmer_pilot_wire_temperature:
+  hidden: true
+sensor.time:
+  hidden: true
+sensor.time__date:
+  hidden: true
+sensor.time_utc:
+  hidden: true
+zwave.philio_technology_corporation_phpat02beu_multisensor_2in1:
+  hidden: true
+zwave.qubino_zmnhjd1_flush_dimmer_pilot_wire:
+  hidden: true
+zwave.sigma_designs_uzb_zwave_usb_adapter:
+  hidden: true

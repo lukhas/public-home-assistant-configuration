@@ -68,6 +68,8 @@
       light.all_hue_lights:
           state: off
           transition: 2
+      switch.besta_switch:
+        state: off
 
 - name: living_room_off
   entities:
@@ -80,4 +82,6 @@
       light.plafonnier:
           state: off
           transition: 2
+      switch.besta_switch:
+        state: off
 

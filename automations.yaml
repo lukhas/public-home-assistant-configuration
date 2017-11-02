@@ -1,10 +1,18 @@
-- id: flash_lights_in_the_morning
-  alias: Reminder to close windows in the morning after 30min
+- id: morning_mode
+  alias: "Morning Mode"
   trigger:
     - platform: state
       entity_id: input_boolean.sleep_mode
       to: 'off'
   action:
+    - service: climate.set_temperature
+      data:
+        entity_id: climate.chambre
+        temperature: 5
+        operation_mode: Heat
+    - service: input_boolean.turn_off
+      data:
+        entity_id: input_boolean.at_home
     - delay: 00:30:00
     - service: light.turn_on
       data:
@@ -18,80 +26,50 @@
     from: playing
     platform: state
   condition:
-  - condition: numeric_state
-    entity_id: sun.sun
-    value_template: '{{ state.attributes.elevation }}'
-    below: 9
+    - condition: time
+      after: '20:00:00'
+      before: '08:00:00'
   action:
     service: scene.turn_on
     entity_id: scene.living_room_at_night
 
 - id: kodi_playing
-  alias: Media player playing
+  alias: Media player starts at night
   trigger:
-  - entity_id: media_player.kodi
-    platform: state
+  - platform: state
+    entity_id: media_player.kodi
     to: playing
-  condition:
-  - condition: numeric_state
-    entity_id: sun.sun
-    value_template: '{{ state.attributes.elevation }}'
-    below: 9
-  action:
-    service: scene.turn_on
-    entity_id: scene.living_room_cinema
-
-- id: ps4_starts_night
-  alias: PS 4 starts (at night)
-  trigger:
-    platform: state
+  - platform: state
     entity_id: device_tracker.ps4
     to: 'home'
   condition:
-  - condition: numeric_state
-    entity_id: sun.sun
-    value_template: '{{ state.attributes.elevation }}'
-    below: 9
+    - condition: time
+      after: '20:00:00'
+      before: '08:00:00'
   action:
   - service: light.turn_off 
     entity_id: light.plafonnier
   - service: scene.turn_on
     entity_id: scene.living_room_cinema
-
-- id: ps4_starts_day
-  alias: PS 4 starts (daytime)
-  trigger:
-    platform: state
-    entity_id: device_tracker.ps4
-    to: 'home'
-  condition:
-  - condition: numeric_state
-    entity_id: sun.sun
-    value_template: '{{ state.attributes.elevation }}'
-    above: 9
-  action:
-  - service: light.turn_off 
-    entity_id: light.plafonnier
-  - service: scene.turn_on
-    entity_id: scene.living_room_normal
 
 - id: kodi_playing_day
   alias: Media player playing during day
   trigger:
-  - entity_id: media_player.kodi
-    platform: state
+  - platform: state
+    entity_id: media_player.kodi
     to: playing
+  - platform: state
+    entity_id: device_tracker.ps4
+    to: 'home'
   action:
   - service: light.turn_off 
     entity_id: light.plafonnier
 
 - id: mild_lights_after_dark
-  alias: Less bright lights once the sun begins to set
+  alias: Mild lights in the evening
   trigger:
-    platform: numeric_state
-    entity_id: sun.sun
-    value_template: '{{ state.attributes.elevation }}'
-    below: 9
+    platform: time
+    at: '18:00:00'
   condition:
     - condition: state
       entity_id: light.commode
@@ -135,7 +113,7 @@
   condition:
     - condition: time
       after: '19:00:00'
-      before: '00:08:00'
+      before: '08:00:00'
     - condition: state
       entity_id: light.commode
       state: 'off'
@@ -251,3 +229,69 @@
     - service: input_boolean.turn_off
       data:
         entity_id: input_boolean.sleep_mode
+
+- id: work_timer
+  alias: "Notify user that he started working a while ago"
+  trigger:
+    platform: state
+    entity_id: input_boolean.sleep_mode
+    to: 'off'
+    for:
+      hours: 9
+      minutes: 30
+      seconds: 0
+  condition:
+    - condition: time
+      weekday:
+        - mon
+        - tue
+        - wed
+        - thu
+        - fri
+    - condition: state
+      entity_id: device_tracker.lucas_oneplus3t
+      state: 'home'
+  action:
+    - service: light.turn_on
+      data:
+        entity_id: light.salon
+        flash: short
+    - service: light.turn_on
+      data:
+        entity_id: light.salon
+        flash: short
+
+- id: set_at_home_mode
+  alias: "Set at_home if I was home during the day"
+  trigger:
+    platform: state
+    entity_id: device_tracker.lucas_oneplus3t
+    to: 'home'
+    for:
+      hours: 1
+      minutes: 0
+      seconds: 0
+  condition:
+    - condition: state
+      entity_id: input_boolean.at_home
+      state: 'off'
+  action:
+    - service: input_boolean.turn_on
+      data:
+        entity_id: input_boolean.at_home
+
+- id: turn_on_heater
+  alias: "Turn on the heater if at_home"
+  trigger:
+    platform: time
+    at: '20:00:00'
+  condition:
+    - condition: state
+      entity_id: input_boolean.at_home
+      state: 'on'
+  action:
+    - service: climate.set_temperature
+      data:
+        entity_id: climate.chambre
+        temperature: 19.5
+        operation_mode: Heat

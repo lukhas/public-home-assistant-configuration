@@ -124,6 +124,10 @@ input_boolean:
     name: Sleep mode
     initial: off
     icon: mdi:brightness-3
+  at_home:
+    name: At Home
+    initial: on
+    icon: mdi:home-variant
 
 device_tracker:
   - platform: owntracks
@@ -176,9 +180,9 @@ climate:
     name: Chambre
     heater: switch.qubino_zmnhjd1_flush_dimmer_pilot_wire_switch
     target_sensor: sensor.philio_technology_corporation_phpat02beu_multisensor_2in1_temperature
-    min_temp: 15
+    min_temp: 5
     max_temp: 21
-    target_temp: 19
+    target_temp: 5
     tolerance: 0.2
     min_cycle_duration:
       minutes: 10
@@ -187,6 +191,16 @@ camera:
   - platform: generic
     still_image_url: !secret weather_map_endpoint
     content_type: 'image/png'
+
+switch:
+  - platform: mqtt
+    name: "Besta switch"
+    state_topic: "stat/sonoff_04E43E/POWER"
+    command_topic: "cmnd/sonoff_04E43E/POWER"
+    qos: 1
+    payload_on: "ON"
+    payload_off: "OFF"
+    retain: true
 
 group: !include groups.yaml
 automation: !include automations.yaml

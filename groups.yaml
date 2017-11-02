@@ -1,4 +1,5 @@
 ## VIEWS
+
 default_view:
   view: yes
   icon: mdi:home
@@ -25,10 +26,11 @@ config:
   icon: mdi:settings
   entities:
     - group.my_automations
-    - group.all_switches
-    - light.qubino_zmnhjd1_flush_dimmer_pilot_wire_level
+    - group.heaters
     - input_boolean.sleep_mode
+    - input_boolean.at_home
     - climate.chambre
+    - group.switches
 
 ## GROUPS
 
@@ -62,6 +64,7 @@ lights:
     - light.commode
     - light.plafonnier
     - light.chambre
+    - switch.besta_switch
 
 my_automations:
   name: Automations
@@ -69,17 +72,18 @@ my_automations:
   entities:
     - automation.begin_morning_mode_when_entering_living_room_in_the_morning
     - automation.begin_sleep_mode_when_turning_on_bedroom_at_night
-    - automation.less_bright_lights_once_the_sun_begins_to_set
     - automation.media_player_pausedstopped
-    - automation.media_player_playing
     - automation.media_player_playing_during_day
+    - automation.media_player_starts_at_night
+    - automation.mild_lights_in_the_evening
+    - automation.morning_mode
+    - automation.notify_user_that_he_started_working_a_while_ago
     - automation.presence_detected_during_night_light_red_lights
-    - automation.ps_4_starts_at_night
-    - automation.ps_4_starts_daytime
-    - automation.reminder_to_close_windows_in_the_morning_after_30min
+    - automation.set_at_home_if_i_was_home_during_the_day
     - automation.turn_off_the_lights_when_no_one_is_home
     - automation.turn_on_lights_when_anyone_gets_home_day
     - automation.turn_on_lights_when_anyone_gets_home_night
+    - automation.turn_on_the_heater_if_at_home 
 
 weather:
   name: Météo
@@ -93,3 +97,16 @@ weather:
     - sensor.dark_sky_hourly_summary
     - sensor.dark_sky_wind_speed
     - sensor.dark_sky_daily_summary
+
+switches:
+  name: Switches
+  view: no
+  entities:
+    - switch.besta_switch
+
+switches:
+  name: Heaters
+  view: no
+  entities:
+    - switch.qubino_zmnhjd1_flush_dimmer_pilot_wire_switch
+    - light.qubino_zmnhjd1_flush_dimmer_pilot_wire_level
