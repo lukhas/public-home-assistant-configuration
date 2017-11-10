@@ -8,7 +8,12 @@
     - service: climate.set_temperature
       data:
         entity_id: climate.chambre
-        temperature: 5
+        temperature: 8
+        operation_mode: Heat
+    - service: climate.set_temperature
+      data:
+        entity_id: climate.salon
+        temperature: 8
         operation_mode: Heat
     - service: input_boolean.turn_off
       data:
@@ -18,6 +23,16 @@
       data:
         entity_id: light.salon
         flash: short
+    - service: climate.set_temperature
+      data:
+        entity_id: climate.chambre
+        temperature: 18
+        operation_mode: Heat
+    - service: climate.set_temperature
+      data:
+        entity_id: climate.salon
+        temperature: 20.5
+        operation_mode: Heat
 
 - id: kodi_paused
   alias: Media player paused/stopped
@@ -195,6 +210,11 @@
       after: '22:00:00'
       before: '08:00:00'
   action:
+    - service: climate.set_temperature
+      data:
+        entity_id: climate.salon
+        temperature: 19
+        operation_mode: Heat
     - service: input_boolean.turn_on
       data:
         entity_id: input_boolean.sleep_mode
@@ -264,17 +284,19 @@
 - id: set_at_home_mode
   alias: "Set at_home if I was home during the day"
   trigger:
-    platform: state
-    entity_id: device_tracker.lucas_oneplus3t
-    to: 'home'
-    for:
-      hours: 1
-      minutes: 0
-      seconds: 0
+    platform: time
+    minutes: '/30'
+    seconds: 00
   condition:
     - condition: state
       entity_id: input_boolean.at_home
       state: 'off'
+    - condition: state
+      entity_id: device_tracker.lucas_oneplus3t
+      state: 'home'
+    - condition: time
+      after: '09:00:00'
+      before: '20:30:00'
   action:
     - service: input_boolean.turn_on
       data:
@@ -284,7 +306,7 @@
   alias: "Turn on the heater if at_home"
   trigger:
     platform: time
-    at: '20:00:00'
+    at: '20:30:00'
   condition:
     - condition: state
       entity_id: input_boolean.at_home
@@ -293,5 +315,62 @@
     - service: climate.set_temperature
       data:
         entity_id: climate.chambre
-        temperature: 19.5
+        temperature: 20.5
         operation_mode: Heat
+
+- id: disable_heaters
+  alias: "Disable heaters if no one at home today"
+  trigger:
+    platform: time
+    at: '20:30:00'
+  condition:
+    - condition: state
+      entity_id: input_boolean.at_home
+      state: 'off'
+  action:
+    - service: climate.set_temperature
+      data:
+        entity_id: climate.chambre
+        temperature: 8
+        operation_mode: Heat
+    - service: climate.set_temperature
+      data:
+        entity_id: climate.salon
+        temperature: 8
+        operation_mode: Heat
+    - service: notify.pushbullet
+      data_template:
+        title: "Disabling heaters"
+        message: "Disabled at {{ states.sensor.date__time.state }}"
+
+- id: reduce_heater_at_night
+  alias: "Reduce the heater temperature at night once the bedroom lights are off"
+  trigger:
+    platform: state
+    entity_id: light.chambre
+    to: 'off'
+  condition:
+    - condition: state
+      entity_id: input_boolean.sleep_mode
+      state: 'on'
+  action:
+    - delay: 00:30:00
+    - service: climate.set_temperature
+      data:
+        entity_id: climate.chambre
+        temperature: 18.5
+        operation_mode: Heat
+
+- id: warn_when_new_device_on_router
+  alias: "Warn me when a new device connects on my WiFi"
+  trigger:
+    platform: event
+    event_type: device_tracker_new_device
+  action:
+    - service: notify.pushbullet
+      data_template:
+        title: "New WiFi connection"
+        message: >
+          New device:
+            {{trigger.event.data.host_name}}
+            {{trigger.event.data.entity_id}}

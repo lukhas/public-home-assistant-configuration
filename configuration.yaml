@@ -94,6 +94,20 @@ sensor:
     unit_of_measurement: "%"
     value_template: '{{ value_json.batt }}'
 
+  - platform: statistics
+    name: living_room_temperature_stats
+    entity_id: sensor.living_room_temperature
+    sampling_size: 5
+    unit_of_measurement: °C
+
+  - platform: template
+    sensors:
+      living_room_temperature_avg:
+        entity_id: sensor.living_room_temperature_stats_mean
+        friendly_name: 'Salon'
+        value_template: '{{ states.sensor.living_room_temperature_stats_mean.state | round(1) }}'
+        unit_of_measurement: °C
+
 binary_sensor:
   - platform: rest
     resource: !secret hue_motion_endpoint
@@ -126,7 +140,7 @@ input_boolean:
     icon: mdi:brightness-3
   at_home:
     name: At Home
-    initial: on
+    initial: off
     icon: mdi:home-variant
 
 device_tracker:
@@ -134,6 +148,10 @@ device_tracker:
     max_gps_accuracy: 300
   - platform: nmap_tracker
     hosts: 192.168.0.43
+  - platform: tplink
+    host: !secret tplink_ip
+    username: !secret tplink_username
+    password: !secret tplink_password
 
 mqtt:
   broker: 172.17.0.1
@@ -159,14 +177,14 @@ history_graph:
   gr1:
     name: Temperatures
     entities:
-      - sensor.philio_technology_corporation_phpat02beu_multisensor_2in1_temperature
-      - sensor.living_room_temperature
+      - sensor.bedroom_temperature_temperature
+      - sensor.living_room_temperature_avg
     hours_to_show: 48
     refresh: 300
   gr2:
     name: Humidity
     entities:
-      - sensor.philio_technology_corporation_phpat02beu_multisensor_2in1_relative_humidity
+      - sensor.bedroom_temperature_relative_humidity
     hours_to_show: 48
     refresh: 300
 
@@ -178,12 +196,21 @@ recorder:
 climate:
   - platform: generic_thermostat
     name: Chambre
-    heater: switch.qubino_zmnhjd1_flush_dimmer_pilot_wire_switch
-    target_sensor: sensor.philio_technology_corporation_phpat02beu_multisensor_2in1_temperature
-    min_temp: 5
-    max_temp: 21
-    target_temp: 5
-    tolerance: 0.2
+    heater: switch.qubino_chambre_switch
+    target_sensor: sensor.bedroom_temperature_temperature
+    target_temp: 18
+    cold_tolerance: 0.2
+    hot_tolerance: 0.2
+    min_cycle_duration:
+      minutes: 10
+
+  - platform: generic_thermostat
+    name: Salon
+    heater: switch.qubino_salon_switch
+    target_sensor: sensor.living_room_temperature_stats_mean
+    target_temp: 20.5
+    cold_tolerance: 0.2
+    hot_tolerance: 0.2
     min_cycle_duration:
       minutes: 10
 
@@ -191,6 +218,7 @@ camera:
   - platform: generic
     still_image_url: !secret weather_map_endpoint
     content_type: 'image/png'
+    scan_interval: 300
 
 switch:
   - platform: mqtt

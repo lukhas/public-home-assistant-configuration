@@ -10,10 +10,11 @@ default_view:
     - device_tracker.lucas_oneplus3t
     - sensor.battery_3t
     - device_tracker.ps4
-    - sensor.philio_technology_corporation_phpat02beu_multisensor_2in1_relative_humidity
-    - sensor.philio_technology_corporation_phpat02beu_multisensor_2in1_temperature
-    - sensor.living_room_temperature
+    - sensor.bedroom_temperature_temperature
+    - sensor.bedroom_temperature_relative_humidity
+    - sensor.living_room_temperature_avg
     - climate.chambre
+    - climate.salon
     - media_player.kodi
     - media_player.mpd
     - camera.generic_camera
@@ -30,7 +31,7 @@ config:
     - input_boolean.sleep_mode
     - input_boolean.at_home
     - climate.chambre
-    - group.switches
+    - climate.salon
 
 ## GROUPS
 
@@ -98,15 +99,11 @@ weather:
     - sensor.dark_sky_wind_speed
     - sensor.dark_sky_daily_summary
 
-switches:
-  name: Switches
-  view: no
-  entities:
-    - switch.besta_switch
-
-switches:
+heaters:
   name: Heaters
   view: no
   entities:
-    - switch.qubino_zmnhjd1_flush_dimmer_pilot_wire_switch
-    - light.qubino_zmnhjd1_flush_dimmer_pilot_wire_level
+    - switch.qubino_chambre_switch
+    - light.qubino_chambre_level
+    - switch.qubino_salon_switch
+    - light.qubino_salon_level

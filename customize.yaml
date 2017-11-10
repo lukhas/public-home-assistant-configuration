@@ -2,20 +2,29 @@ sensor.living_room_lux:
   friendly_name: Lux
 sensor.living_room_temperature:
   friendly_name: Salon
+sensor.living_room_temperature_stats_mean:
+  friendly_name: Avg Salon
 
 switch.besta_switch:
   icon: mdi:lightbulb
   
-switch.qubino_zmnhjd1_flush_dimmer_pilot_wire_switch:
+switch.qubino_chambre_switch:
   friendly_name: Switch Chauffage Chambre
   icon: mdi:toggle-switch
-light.qubino_zmnhjd1_flush_dimmer_pilot_wire_level:
+light.qubino_chambre_level:
   friendly_name: Chauffage Chambre
   icon: mdi:radiator
 
-sensor.philio_technology_corporation_phpat02beu_multisensor_2in1_temperature:
+switch.qubino_salon_switch:
+  friendly_name: Switch Chauffage Salon
+  icon: mdi:toggle-switch
+light.qubino_salon_level:
+  friendly_name: Chauffage Salon
+  icon: mdi:radiator
+
+sensor.bedroom_temperature_temperature:
   friendly_name: Chambre
-sensor.philio_technology_corporation_phpat02beu_multisensor_2in1_relative_humidity:
+sensor.bedroom_temperature_relative_humidity:
   friendly_name: Humidity
 
 sensor.dark_sky_apparent_temperature:
