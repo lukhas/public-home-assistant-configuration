@@ -1,0 +1,142 @@
+name: Home
+views:
+  - icon: mdi:home
+    name: Home
+    cards:
+      - type: entity-filter
+        entities:
+          - device_tracker.lucas_oneplus3t
+          - device_tracker.esme
+          - device_tracker.ps4
+        state_filter:
+          - 'home'
+        card:
+          type: glance
+          title: Devices
+
+      - type: entities
+        title: Météo
+        entities:
+          - sensor.dark_sky_temperature
+          - sensor.dark_sky_daytime_high_temperature
+          - sensor.dark_sky_summary
+          - sensor.dark_sky_hourly_summary
+          - sensor.dark_sky_wind_speed
+          - sensor.dark_sky_daily_summary
+
+      - type: entities
+        title: Salon
+        entities:
+          - sensor.living_room_temperature_avg
+          - light.salon
+          - light.coin_salon
+          - light.commode
+          - light.plafonnier
+          - switch.besta_switch
+          - switch.ventilateur_switch
+
+      - type: entities
+        title: Chambre
+        entities:
+          - sensor.bedroom_temperature_temperature
+          - light.chambre
+          - light.plafonnier_chambre
+
+      - type: entities
+        title: Divers
+        show_header_toggle: false
+        entities:
+          - light.cuisine_2
+          - light.salle_de_bains
+          - light.toilettes
+          - input_boolean.guest_mode
+
+      - type: history-graph
+        title: Températures
+        entities:
+          - sensor.bedroom_temperature_temperature
+          - sensor.living_room_temperature_avg
+        hours_to_show: 24
+        refresh_interval: 300
+
+      - type: picture
+        image: !secret weather_map_endpoint
+
+      - type: entities
+        title: Scenes
+        show_header_toggle: false
+        entities:
+          - scene.living_room_normal
+          - scene.living_room_at_night
+          - scene.living_room_cinema
+
+      - type: entity-filter
+        entities:
+          - climate.chambre
+          - climate.salon
+        state_filter:
+          - 'idle'
+          - 'heat'
+        card:
+          type: entities
+          title: Chauffage
+
+      - type: entity-filter
+        entities:
+          - media_player.mpd
+          - media_player.kodi
+          - media_player.mopidy
+          #- sensor.twitch
+        state_filter:
+          - 'streaming'
+          - 'playing'
+          - 'idle'
+          - 'off'
+        card:
+          type: entities
+          title: Media
+
+  - icon: mdi:settings
+    name: Settings
+    cards:
+
+      - type: entities
+        title: Heating
+        entities:
+          - input_boolean.heating_master_switch
+          - switch.qubino_chambre_switch
+          - light.qubino_chambre_level
+          - switch.qubino_salon_switch
+          - light.qubino_salon_level
+
+      - type: history-graph
+        title: Autres températures
+        entities:
+          - sensor.bathroom_temperature_avg
+          - sensor.restroom_temperature_avg
+        hours_to_show: 24
+        refresh_interval: 300
+
+      - type: history-graph
+        title: Humidité Chambre
+        entities:
+          - sensor.bedroom_temperature_relative_humidity
+        hours_to_show: 24
+        refresh_interval: 300
+
+      - type: entities
+        title: Misc Control
+        show_header_toggle: false
+        entities:
+          - input_boolean.at_home
+          - input_boolean.sleep_mode
+
+      - type: entities
+        title: Scripts
+        show_header_toggle: false
+        entities:
+          - script.heating_off
+          - script.heating_on_day
+          - script.heating_on_evening
+          - script.heating_on_sleep
+          - script.heating_on_night
