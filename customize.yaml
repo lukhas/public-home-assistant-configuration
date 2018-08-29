@@ -7,7 +7,12 @@ sensor.living_room_temperature_stats_mean:
 
 switch.besta_switch:
   icon: mdi:lightbulb
-  
+  friendly_name: Besta
+
+switch.ventilateur_switch:
+  icon: mdi:fan
+  friendly_name: Ventilateur
+
 switch.qubino_chambre_switch:
   friendly_name: Switch Chauffage Chambre
   icon: mdi:toggle-switch
@@ -27,6 +32,8 @@ sensor.bedroom_temperature_temperature:
 sensor.bedroom_temperature_relative_humidity:
   friendly_name: Humidity
 
+sensor.dark_sky_daytime_high_temperature:
+  friendly_name: Temperature Max
 sensor.dark_sky_apparent_temperature:
   friendly_name: Apparent Temperature
 sensor.dark_sky_daily_high_apparent_temperature:

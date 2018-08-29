@@ -5,16 +5,8 @@
       entity_id: input_boolean.sleep_mode
       to: 'off'
   action:
-    - service: climate.set_temperature
-      data:
-        entity_id: climate.chambre
-        temperature: 8
-        operation_mode: Heat
-    - service: climate.set_temperature
-      data:
-        entity_id: climate.salon
-        temperature: 8
-        operation_mode: Heat
+    - service: script.turn_on
+      entity_id: script.heating_off
     - service: input_boolean.turn_off
       data:
         entity_id: input_boolean.at_home
@@ -23,16 +15,46 @@
       data:
         entity_id: light.salon
         flash: short
-    - service: climate.set_temperature
-      data:
-        entity_id: climate.chambre
-        temperature: 18
-        operation_mode: Heat
-    - service: climate.set_temperature
-      data:
-        entity_id: climate.salon
-        temperature: 20.5
-        operation_mode: Heat
+    - service: script.turn_on
+      entity_id: script.heating_on_day
+
+- id: heating_master_switch_on_evening
+  alias: "Heating Master Switch on (evening)"
+  trigger:
+    - platform: state
+      entity_id: input_boolean.heating_master_switch
+      to: 'on'
+  condition:
+    - condition: time
+      after: '20:00:00'
+      before: '08:00:00'
+  action:
+    - service: script.turn_on
+      entity_id: script.heating_on_evening
+
+- id: heating_master_switch_on_day
+  alias: "Heating Master Switch on (day)"
+  trigger:
+    - platform: state
+      entity_id: input_boolean.heating_master_switch
+      to: 'on'
+  condition:
+    - condition: time
+      after: '08:00:00'
+      before: '20:00:00'
+  action:
+    - service: script.turn_on
+      entity_id: script.heating_on_day
+
+- id: heating_master_switch_off
+  alias: "Heating Master Switch off"
+  trigger:
+    - platform: state
+      entity_id: input_boolean.heating_master_switch
+      to: 'off'
+  action:
+    - service: script.turn_on
+      entity_id: script.heating_off
 
 - id: kodi_paused
   alias: Media player paused/stopped
@@ -76,6 +98,9 @@
   - platform: state
     entity_id: device_tracker.ps4
     to: 'home'
+  - platform: state
+    entity_id: device_tracker.esme
+    to: 'home'
   action:
   - service: light.turn_off 
     entity_id: light.plafonnier
@@ -84,7 +109,7 @@
   alias: Mild lights in the evening
   trigger:
     platform: time
-    at: '18:00:00'
+    at: '20:00:00'
   condition:
     - condition: state
       entity_id: light.commode
@@ -99,7 +124,6 @@
     - platform: state
       entity_id: binary_sensor.living_room_motion
       to: 'on'
-      from: 'off'
   condition:
     - condition: time
       after: '08:00:00'
@@ -113,10 +137,14 @@
   action:
     - service: scene.turn_on
       entity_id: scene.living_room_normal_fast
-    - service: notify.pushbullet
-      data_template:
-        title: "Someone home"
-        message: "Sensor triggered at {{ states.sensor.date__time.state }}"
+    - service: input_boolean.turn_on
+      data:
+        entity_id: input_boolean.at_home
+    - service: media_player.play_media
+      data:
+        entity_id: media_player.mopidy
+        media_content_type: playlist
+        media_content_id: welcome
 
 - id: lights_on_when_home_night
   alias: Turn on lights when anyone gets home (night)
@@ -124,7 +152,6 @@
     - platform: state
       entity_id: binary_sensor.living_room_motion
       to: 'on'
-      from: 'off'
   condition:
     - condition: time
       after: '19:00:00'
@@ -138,10 +165,9 @@
   action:
     - service: scene.turn_on
       entity_id: scene.living_room_normal
-    - service: notify.pushbullet
-      data_template:
-        title: "Someone home"
-        message: "Sensor triggered at {{ states.sensor.date__time.state }}"
+    - service: input_boolean.turn_on
+      data:
+        entity_id: input_boolean.at_home
 
 - id: red_light_at_night
   alias: "Presence detected during night, light red lights"
@@ -149,7 +175,6 @@
     - platform: state
       entity_id: binary_sensor.living_room_motion
       to: 'on'
-      from: 'off'
   condition:
     - condition: time
       after: '22:00:00'
@@ -194,10 +219,6 @@
   action:
     - service: scene.turn_on
       entity_id: scene.lights_off
-    - service: notify.pushbullet
-      data_template:
-        title: "Lights turned off"
-        message: "Turned off the lights at {{ states.sensor.date__time.state }}"
 
 - id: begin_sleep_mode
   alias: "Begin sleep mode when turning on bedroom at night"
@@ -210,20 +231,17 @@
       after: '22:00:00'
       before: '08:00:00'
   action:
-    - service: climate.set_temperature
-      data:
-        entity_id: climate.salon
-        temperature: 19
-        operation_mode: Heat
+    - service: script.turn_on
+      entity_id: script.heating_on_sleep
     - service: input_boolean.turn_on
       data:
         entity_id: input_boolean.sleep_mode
-    - service: scene.turn_on
-      entity_id: scene.living_room_cinema
-    - delay: 00:02:00
+    - service: switch.turn_off
+      data:
+        entity_id: switch.ventilateur_switch
     - service: scene.turn_on
       entity_id: scene.living_room_red
-    - delay: 00:02:00
+    - delay: 00:05:00
     - service: scene.turn_on
       entity_id: scene.living_room_off
 
@@ -276,16 +294,12 @@
       data:
         entity_id: light.salon
         flash: short
-    - service: light.turn_on
-      data:
-        entity_id: light.salon
-        flash: short
 
 - id: set_at_home_mode
   alias: "Set at_home if I was home during the day"
   trigger:
     platform: time
-    minutes: '/30'
+    minutes: '/10'
     seconds: 00
   condition:
     - condition: state
@@ -294,54 +308,23 @@
     - condition: state
       entity_id: device_tracker.lucas_oneplus3t
       state: 'home'
-    - condition: time
-      after: '09:00:00'
-      before: '20:30:00'
   action:
     - service: input_boolean.turn_on
       data:
         entity_id: input_boolean.at_home
 
-- id: turn_on_heater
-  alias: "Turn on the heater if at_home"
+- id: turn_on_bedroom_heater
+  alias: "Turn on the bedroom heater if at_home"
   trigger:
     platform: time
-    at: '20:30:00'
+    at: '20:31:00'
   condition:
     - condition: state
       entity_id: input_boolean.at_home
       state: 'on'
   action:
-    - service: climate.set_temperature
-      data:
-        entity_id: climate.chambre
-        temperature: 20.5
-        operation_mode: Heat
-
-- id: disable_heaters
-  alias: "Disable heaters if no one at home today"
-  trigger:
-    platform: time
-    at: '20:30:00'
-  condition:
-    - condition: state
-      entity_id: input_boolean.at_home
-      state: 'off'
-  action:
-    - service: climate.set_temperature
-      data:
-        entity_id: climate.chambre
-        temperature: 8
-        operation_mode: Heat
-    - service: climate.set_temperature
-      data:
-        entity_id: climate.salon
-        temperature: 8
-        operation_mode: Heat
-    - service: notify.pushbullet
-      data_template:
-        title: "Disabling heaters"
-        message: "Disabled at {{ states.sensor.date__time.state }}"
+    - service: script.turn_on
+      entity_id: script.heating_on_evening
 
 - id: reduce_heater_at_night
   alias: "Reduce the heater temperature at night once the bedroom lights are off"
@@ -355,11 +338,8 @@
       state: 'on'
   action:
     - delay: 00:30:00
-    - service: climate.set_temperature
-      data:
-        entity_id: climate.chambre
-        temperature: 18.5
-        operation_mode: Heat
+    - service: script.turn_on
+      entity_id: script.heating_on_night
 
 - id: warn_when_new_device_on_router
   alias: "Warn me when a new device connects on my WiFi"
@@ -374,3 +354,171 @@
           New device:
             {{trigger.event.data.host_name}}
             {{trigger.event.data.entity_id}}
+
+
+- id: light_restroom
+  alias: "Light in restroom"
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.restroom_motion
+      to: 'on'
+  condition:
+    - condition: state
+      entity_id: input_boolean.sleep_mode
+      state: 'off'
+    - condition: state
+      entity_id: input_boolean.guest_mode
+      state: 'off'
+  action:
+  - service: scene.turn_on
+    entity_id: scene.restroom_day
+  - service: scene.turn_on
+    entity_id: scene.bathroom_off
+
+- id: light_restroom_night
+  alias: "Light in restroom at night"
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.restroom_motion
+      to: 'on'
+  condition:
+    - condition: state
+      entity_id: input_boolean.sleep_mode
+      state: 'on'
+      for:
+        hours: 0
+        minutes: 10
+        seconds: 0
+  action:
+  - service: scene.turn_on
+    entity_id: scene.restroom_night
+
+
+- id: light_bathroom
+  alias: "Light in bathroom"
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.bathroom_motion
+      to: 'on'
+  condition:
+    - condition: state
+      entity_id: input_boolean.sleep_mode
+      state: 'off'
+    - condition: state
+      entity_id: input_boolean.guest_mode
+      state: 'off'
+  action:
+  - service: scene.turn_on
+    entity_id: scene.bathroom_on
+  - service: scene.turn_on
+    entity_id: scene.restroom_off
+
+- id: turn_off_lights_when_back_in_living_room
+  alias: Turn off small room lights when back in the living room
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.living_room_motion
+      to: 'on'
+  condition:
+    - condition: state
+      entity_id: input_boolean.sleep_mode
+      state: 'off'
+    - condition: state
+      entity_id: input_boolean.guest_mode
+      state: 'off'
+  action:
+    - service: scene.turn_on
+      entity_id: scene.bathroom_off
+    - service: scene.turn_on
+      entity_id: scene.restroom_off
+
+- id: twitch_streaming
+  alias: Twitch Streaming
+  trigger:
+    platform: state
+    entity_id:
+      - sensor.twitch_akshatchandra
+      - sensor.twitch_arex1338
+      - sensor.twitch_assios
+      - sensor.twitch_astaneh
+      - sensor.twitch_cheekychesstv
+      - sensor.twitch_chessxplained
+      - sensor.twitch_fate
+      - sensor.twitch_fionchetta
+      - sensor.twitch_imrosen
+      - sensor.twitch_larsochess
+      - sensor.twitch_lichessdotorg
+      - sensor.twitch_lovlas
+      - sensor.twitch_maskenissen
+      - sensor.twitch_nasa
+      - sensor.twitch_stlchessclub
+    to: 'streaming'
+    for:
+      seconds: 300
+  condition:
+    condition: and
+    conditions:
+      - condition: state
+        entity_id: input_boolean.twitch
+        state: 'on'
+      - condition: state
+        entity_id: input_boolean.sleep_mode
+        state: 'off'
+      - condition: or
+        conditions:
+          - condition: state
+            entity_id: device_tracker.lucas_oneplus3t
+            state: 'home'
+          - condition: state
+            entity_id: device_tracker.lucas_oneplus3t
+            state: 'St-Romans'
+
+  action:
+    - service: notify.pushbullet
+      data_template:
+        title: "Twitch Streaming"
+        message: >
+          {{ trigger.to_state.attributes.friendly_name }} is streaming:
+            {{ trigger.to_state.attributes.title }}
+
+- id: turn_off_bathroom_lights_after_while
+  alias: Turn off the bathroom lights after a while
+  trigger:
+    platform: state
+    entity_id: light.salle_de_bains
+    to: 'on'
+    for:
+      hours: 0
+      minutes: 25
+      seconds: 0
+  condition:
+    - condition: state
+      entity_id: binary_sensor.bathroom_motion
+      state: 'off'
+      for:
+        hours: 0
+        minutes: 25
+        seconds: 0
+  action:
+    - service: scene.turn_on
+      entity_id: scene.bathroom_off
+
+# - id: check_heater_status
+#   alias: "Check heater status"
+#   trigger:
+#     platform: time
+#     minutes: '/10'
+#     seconds: 00
+#   condition:
+#     - condition: state
+#       entity_id: input_boolean.heating_master_switch
+#       state: 'on'
+#   action:
+#     - service: script.turn_on
+#       entity_id: script.check_heater_status_11
+#     - service: script.turn_on
+#       entity_id: script.check_heater_status_12
+#     - service: script.turn_on
+#       entity_id: script.check_heater_status_21
+#     - service: script.turn_on
+#       entity_id: script.check_heater_status_22

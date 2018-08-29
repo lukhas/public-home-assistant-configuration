@@ -5,21 +5,20 @@ default_view:
   icon: mdi:home
   entities:
     - group.weather
+    - camera.generic_camera
     - group.lights
+    - group.misc_lights
     - group.temperatures
     - device_tracker.lucas_oneplus3t
-    - sensor.battery_3t
     - device_tracker.ps4
     - sensor.bedroom_temperature_temperature
-    - sensor.bedroom_temperature_relative_humidity
     - sensor.living_room_temperature_avg
     - climate.chambre
     - climate.salon
     - media_player.kodi
     - media_player.mpd
-    - camera.generic_camera
-    - group.humidity
     - group.scenes
+    - group.switches
 
 config:
   name: Config
@@ -27,12 +26,25 @@ config:
   icon: mdi:settings
   entities:
     - group.my_automations
+    - group.all_automations
+    - group.master_switches
     - group.heaters
     - input_boolean.sleep_mode
     - input_boolean.at_home
     - climate.chambre
     - climate.salon
+    - group.my_scripts
+    - group.humidity
+    - group.other_temperatures
 
+twitch:
+  name: Twitch
+  view: yes
+  icon: mdi:twitch
+  entities:
+    - group.switches
+    - group.twitches
+    
 ## GROUPS
 
 scenes:
@@ -42,13 +54,18 @@ scenes:
     - scene.living_room_normal
     - scene.living_room_at_night
     - scene.living_room_cinema
-    - scene.living_room_red
 
 temperatures:
   name: Temperatures
   view: no
   entities:
     - history_graph.temperatures
+
+other_temperatures:
+  name: Other Temperatures
+  view: no
+  entities:
+    - history_graph.other_temperatures
 
 humidity:
   name: Humidity
@@ -57,15 +74,25 @@ humidity:
     - history_graph.humidity
 
 lights:
-  name: Lights
+  name: Salon
   view: no
   entities:
     - light.salon
     - light.coin_salon
     - light.commode
     - light.plafonnier
-    - light.chambre
     - switch.besta_switch
+    - switch.ventilateur_switch
+
+misc_lights:
+  name: Misc lights
+  view: no
+  entities:
+    - light.chambre
+    - light.plafonnier_chambre
+    - light.cuisine_2
+    - light.salle_de_bains
+    - light.toilettes
 
 my_automations:
   name: Automations
@@ -73,6 +100,12 @@ my_automations:
   entities:
     - automation.begin_morning_mode_when_entering_living_room_in_the_morning
     - automation.begin_sleep_mode_when_turning_on_bedroom_at_night
+    - automation.heating_master_switch_off
+    - automation.heating_master_switch_on_day
+    - automation.heating_master_switch_on_evening
+    - automation.light_in_bathroom
+    - automation.light_in_restroom
+    - automation.light_in_restroom_at_night
     - automation.media_player_pausedstopped
     - automation.media_player_playing_during_day
     - automation.media_player_starts_at_night
@@ -80,20 +113,23 @@ my_automations:
     - automation.morning_mode
     - automation.notify_user_that_he_started_working_a_while_ago
     - automation.presence_detected_during_night_light_red_lights
+    - automation.reduce_the_heater_temperature_at_night_once_the_bedroom_lights_are_off
     - automation.set_at_home_if_i_was_home_during_the_day
+    - automation.turn_off_small_room_lights_when_back_in_the_living_room
+    - automation.turn_off_the_bathroom_lights_after_a_while
     - automation.turn_off_the_lights_when_no_one_is_home
     - automation.turn_on_lights_when_anyone_gets_home_day
     - automation.turn_on_lights_when_anyone_gets_home_night
-    - automation.turn_on_the_heater_if_at_home 
+    - automation.turn_on_the_bedroom_heater_if_at_home
+    - automation.twitch_streaming
+    - automation.warn_me_when_a_new_device_connects_on_my_wifi
 
 weather:
   name: Météo
   view: no
   entities:
     - sensor.dark_sky_temperature
-    - sensor.dark_sky_apparent_temperature
-    - sensor.dark_sky_daily_high_apparent_temperature
-    - sensor.dark_sky_daily_low_apparent_temperature
+    - sensor.dark_sky_daytime_high_temperature
     - sensor.dark_sky_summary
     - sensor.dark_sky_hourly_summary
     - sensor.dark_sky_wind_speed
@@ -107,3 +143,50 @@ heaters:
     - light.qubino_chambre_level
     - switch.qubino_salon_switch
     - light.qubino_salon_level
+
+master_switches:
+  name: Master Switches
+  view: no
+  entities:
+    - input_boolean.heating_master_switch
+
+my_scripts:
+  name: Scripts
+  view: no
+  entities:
+    - script.heating_off
+    - script.heating_on_day
+    - script.heating_on_evening
+    - script.heating_on_sleep
+    - script.heating_on_night
+
+switches:
+  name: Switches
+  view: no
+  entities:
+    - input_boolean.guest_mode
+    - input_boolean.twitch
+
+twitches:
+  name: Twitches
+  view: no
+  entities:
+      - sensor.twitch_akshatchandra
+      - sensor.twitch_arex1338
+      - sensor.twitch_assios
+      - sensor.twitch_astaneh
+      - sensor.twitch_cheekychesstv
+      - sensor.twitch_chessleaguetv
+      - sensor.twitch_chessxplained
+      - sensor.twitch_fate
+      - sensor.twitch_fionchetta
+      - sensor.twitch_gmvallejo
+      - sensor.twitch_imrosen
+      - sensor.twitch_larsochess
+      - sensor.twitch_lichessdotorg
+      - sensor.twitch_lovlas
+      - sensor.twitch_maskenissen
+      - sensor.twitch_programfox
+      - sensor.twitch_nasa
+      - sensor.twitch_stlchessclub
+

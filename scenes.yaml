@@ -65,10 +65,10 @@
 
 - name: lights_off
   entities:
-      light.all_hue_lights:
-          state: off
-          transition: 2
-      switch.besta_switch:
+    group.all_lights:
+      state: off
+      transition: 2
+    switch.besta_switch:
         state: off
 
 - name: living_room_off
@@ -84,4 +84,41 @@
           transition: 2
       switch.besta_switch:
         state: off
+      switch.ventilateur_switch:
+        state: off
 
+- name: restroom_day
+  entities:
+      light.toilettes:
+          state: on
+          transition: 1
+          brightness: 170
+          xy_color: [ 0.4571, 0.4123 ]
+
+- name: restroom_night
+  entities:
+      light.toilettes:
+          state: on
+          transition: 10
+          brightness: 30
+          color_name: 'red'
+
+- name: restroom_off
+  entities:
+      light.toilettes:
+          state: off
+          transition: 5
+
+- name: bathroom_on
+  entities:
+      light.salle_de_bains:
+          state: on
+          transition: 1
+          brightness: 254
+          color_temp: 389
+
+- name: bathroom_off
+  entities:
+      light.salle_de_bains:
+          state: off
+          transition: 5

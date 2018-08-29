@@ -63,8 +63,8 @@ sensor:
       - cloud_cover
       - hourly_summary
       - daily_summary
-      - temperature_max
-      - temperature_min
+      - temperature_high
+      - temperature_low
 
   - platform: time_date
     display_options:
@@ -75,17 +75,22 @@ sensor:
       - 'time_utc'
 
   - platform: rest
-    resource: !secret hue_temperature_endpoint
+    resource: !secret hue_temperature_livingroom_endpoint
     value_template: '{% set intermediate_temp = value_json.state.temperature | float / 100 %} {% set intermediate_temp2 = intermediate_temp + 1.6 %} {{ intermediate_temp2 | round(1) }}'
     unit_of_measurement: °C
     name: 'Living Room Temperature'
     scan_interval: 300
-
   - platform: rest
-    resource: !secret hue_lux_endpoint
-    value_template: '{{ value_json.state.lightlevel }}'
-    unit_of_measurement: Lux
-    name: 'Living Room Lux'
+    resource: !secret hue_temperature_bathroom_endpoint
+    value_template: '{% set intermediate_temp = value_json.state.temperature | float / 100 %} {% set intermediate_temp2 = intermediate_temp + 1.3 %} {{ intermediate_temp2 | round(1) }}'
+    unit_of_measurement: °C
+    name: 'Bathroom Temperature'
+    scan_interval: 300
+  - platform: rest
+    resource: !secret hue_temperature_restroom_endpoint
+    value_template: '{% set intermediate_temp = value_json.state.temperature | float / 100 %} {% set intermediate_temp2 = intermediate_temp + 1.9 %} {{ intermediate_temp2 | round(1) }}'
+    unit_of_measurement: °C
+    name: 'Restroom Temperature'
     scan_interval: 300
 
   - platform: mqtt
@@ -97,28 +102,90 @@ sensor:
   - platform: statistics
     name: living_room_temperature_stats
     entity_id: sensor.living_room_temperature
-    sampling_size: 5
+    sampling_size: 4
+    unit_of_measurement: °C
+  - platform: statistics
+    name: bathroom_temperature_stats
+    entity_id: sensor.bathroom_temperature
+    sampling_size: 4
+    unit_of_measurement: °C
+  - platform: statistics
+    name: restroom_temperature_stats
+    entity_id: sensor.restroom_temperature
+    sampling_size: 4
     unit_of_measurement: °C
 
   - platform: template
     sensors:
       living_room_temperature_avg:
-        entity_id: sensor.living_room_temperature_stats_mean
         friendly_name: 'Salon'
         value_template: '{{ states.sensor.living_room_temperature_stats_mean.state | round(1) }}'
         unit_of_measurement: °C
+  - platform: template
+    sensors:
+      bathroom_temperature_avg:
+        friendly_name: 'SdB'
+        value_template: '{{ states.sensor.bathroom_temperature_stats_mean.state | round(1) }}'
+        unit_of_measurement: °C
+  - platform: template
+    sensors:
+      restroom_temperature_avg:
+        friendly_name: 'Toilettes'
+        value_template: '{{ states.sensor.restroom_temperature_stats_mean.state | round(1) }}'
+        unit_of_measurement: °C
+
+  - platform: twitch
+    entity_namespace: twitch
+    channels:
+      - akshatchandra
+      - arex1338
+      - assios
+      - astaneh
+      - cheekychesstv
+      - chessleaguetv
+      - chessxplained
+      - fate
+      - fionchetta
+      - gmvallejo
+      - imrosen
+      - larsochess
+      - lichessdotorg
+      - lovlas
+      - maskenissen
+      - programfox
+      - nasa
+      - stlchessclub
+
+  # - platform: synologydsm
+  #   host: !secret synology_ip
+  #   username: !secret synology_username
+  #   password: !secret synology_password
+  #   volumes:
+  #     - volume1
+  #   monitored_conditions:
+  #     - cpu_total_load
 
 binary_sensor:
   - platform: rest
-    resource: !secret hue_motion_endpoint
+    resource: !secret hue_motion_livingroom_endpoint
     value_template: '{{ value_json.state.presence }}'
     name: 'Living Room Motion'
     scan_interval: 2
+  - platform: rest
+    resource: !secret hue_motion_restroom_endpoint
+    value_template: '{{ value_json.state.presence }}'
+    name: 'Restroom Motion'
+    scan_interval: 2
+  - platform: rest
+    resource: !secret hue_motion_bathroom_endpoint
+    value_template: '{{ value_json.state.presence }}'
+    name: 'Bathroom Motion'
+    scan_interval: 2
 
 
-light:
-  - platform: hue
-    host: 192.168.0.10
+hue:
+  bridges:
+    - host: 192.168.0.10
 
 # Text to speech
 tts:
@@ -132,6 +199,9 @@ media_player:
  - platform: mpd
    host: 192.168.0.111
    password: !secret mpd_password
+ - platform: mpd
+   name: mopidy
+   host: 172.17.0.1
 
 input_boolean:
   sleep_mode:
@@ -142,12 +212,32 @@ input_boolean:
     name: At Home
     initial: off
     icon: mdi:home-variant
+  heating_master_switch:
+    name: Heating Master Switch
+    initial: on
+    icon: mdi:radiator
+  guest_mode:
+    name: Guest Mode
+    initial: off
+    icon: mdi:account-multiple
+  twitch:
+    name: Twitch
+    initial: on
+    icon: mdi:twitch
+
+input_datetime:
+  return_date:
+    name: Return date
+    has_date: true
+    has_time: true
 
 device_tracker:
   - platform: owntracks
     max_gps_accuracy: 300
   - platform: nmap_tracker
-    hosts: 192.168.0.43
+    hosts:
+      - 192.168.0.43
+      - 192.168.0.5
   - platform: tplink
     host: !secret tplink_ip
     username: !secret tplink_username
@@ -167,6 +257,11 @@ zone:
     longitude: !secret long
     radius: 100
     icon: mdi:home
+  - name: St-Romans
+    latitude: !secret sr_lat
+    longitude: !secret sr_long
+    radius: 300
+    icon: mdi:castle
 
 notify:
   - name: pushbullet
@@ -179,13 +274,20 @@ history_graph:
     entities:
       - sensor.bedroom_temperature_temperature
       - sensor.living_room_temperature_avg
-    hours_to_show: 48
+    hours_to_show: 24
+    refresh: 300
+  gr3:
+    name: Other Temperatures
+    entities:
+      - sensor.bathroom_temperature_avg
+      - sensor.restroom_temperature_avg
+    hours_to_show: 24
     refresh: 300
   gr2:
     name: Humidity
     entities:
       - sensor.bedroom_temperature_relative_humidity
-    hours_to_show: 48
+    hours_to_show: 24
     refresh: 300
 
 recorder:
@@ -198,21 +300,21 @@ climate:
     name: Chambre
     heater: switch.qubino_chambre_switch
     target_sensor: sensor.bedroom_temperature_temperature
-    target_temp: 18
-    cold_tolerance: 0.2
+    target_temp: 18.5
+    cold_tolerance: 0
     hot_tolerance: 0.2
     min_cycle_duration:
-      minutes: 10
+      minutes: 5
 
   - platform: generic_thermostat
     name: Salon
     heater: switch.qubino_salon_switch
     target_sensor: sensor.living_room_temperature_stats_mean
-    target_temp: 20.5
-    cold_tolerance: 0.2
+    target_temp: 20
+    cold_tolerance: -0.4
     hot_tolerance: 0.2
     min_cycle_duration:
-      minutes: 10
+      minutes: 5
 
 camera:
   - platform: generic
@@ -229,6 +331,95 @@ switch:
     payload_on: "ON"
     payload_off: "OFF"
     retain: true
+  - platform: mqtt
+    name: "Ventilateur switch"
+    state_topic: "stat/sonoff_24C1AA/POWER"
+    command_topic: "cmnd/sonoff_24C1AA/POWER"
+    qos: 1
+    payload_on: "ON"
+    payload_off: "OFF"
+    retain: true
+
+proximity:
+  home: 
+    devices:
+      - device_tracker.lucas_oneplus3t
+    tolerance: 5
+
+snips:
+
+intent_script:
+  speakerInterrupt:
+    action:
+      - service: media_player.turn_off
+        data:
+          entity_id: media_player.mpd
+  resumeMusic:
+    action:
+      - service: media_player.turn_on
+        data:
+          entity_id: media_player.mpd
+  previousSong:
+    action:
+      - service: media_player.media_previous_track
+        data:
+          entity_id: media_player.mpd
+  nextSong:
+    action:
+      - service: media_player.media_next_track
+        data:
+          entity_id: media_player.mpd
+    
+  sceneSetNight:
+    action:
+      - service: scene.turn_on
+        data:
+          entity_id: scene.living_room_at_night
+  sceneSetWork:
+    action:
+      - service: scene.turn_on
+        data:
+          entity_id: scene.living_room_normal
+      - service: light.turn_on
+        data:
+          entity_id: light.plafonnier
+  switchSetGuests:
+    action:
+      - service: input_boolean.turn_on
+        data:
+          entity_id: input_boolean.guest_mode
+  switchUnsetGuests:
+    action:
+      - service: input_boolean.turn_off
+        data:
+          entity_id: input_boolean.guest_mode
+  lightsTurnOff:
+    action:
+      - service: light.turn_off
+        data_template:
+          entity_id: light.{{ house_room | replace(" ","_") }}
+  lightsSet:
+    action:
+      - service: light.turn_on
+        data_template:
+          entity_id: light.{{ house_room | replace(" ","_") }}
+  switchSetFan:
+    action:
+      - service: switch.turn_on
+        data:
+          entity_id: switch.ventilateur_switch
+  switchUnsetFan:
+    action:
+      - service: switch.turn_off
+        data:
+          entity_id: switch.ventilateur_switch
+
+# calendar:
+#   - platform: caldav
+#     url: !secret caldav_url
+#     username: !secret caldav_username
+#     password: !secret caldav_password
+
 
 group: !include groups.yaml
 automation: !include automations.yaml

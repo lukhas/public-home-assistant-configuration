@@ -1,48 +1,149 @@
-# plafonnier_off:
-#   alias: Plafonnier Off
-#   sequence:
-#   - alias: plafonnier_off
-#     data:
-#       entity_id: light.plafonnier
-#     service: light.turn_off
-# plafonnier_on:
-#   alias: Plafonnier On
-#   sequence:
-#   - alias: plafonnier_on
-#     data:
-#       entity_id: light.plafonnier
-#       brightness: 254
-#       color_temp: 363
-#     service: light.turn_on
+heating_on_day:
+  alias: Turn on the heaters during the day
+  sequence:
+    - condition: state
+      entity_id: input_boolean.heating_master_switch
+      state: 'on'
+    - service: climate.set_temperature
+      data:
+        entity_id: climate.chambre
+        temperature: 19
+        operation_mode: Heat
+    - service: climate.set_temperature
+      data:
+        entity_id: climate.salon
+        temperature: 20
+        operation_mode: Heat
 
-# record_commode:
-#   alias: Record commode status to slider
-#   sequence:
-#     - service: input_slider.select_value
-#       data_template:
-#         entity_id: input_slider.commode_brightness
-#         value: '{% if states.light.commode.state == "off" %}0{% else %}{{states.light.commode.attributes.brightness}}{% endif %}'
+heating_on_evening:
+  alias: Turn on the heaters in the evening
+  sequence:
+    - condition: state
+      entity_id: input_boolean.heating_master_switch
+      state: 'on'
+    - service: climate.set_temperature
+      data:
+        entity_id: climate.chambre
+        temperature: 20.5
+        operation_mode: Heat
+    - service: climate.set_temperature
+      data:
+        entity_id: climate.salon
+        temperature: 20
+        operation_mode: Heat
 
-# return_commode:
-#   alias: Return commode to recorded value
-#   sequence:
-#     - service: light.turn_on
-#       entity_id: light.commode
-#       data_template:
-#         brightness: '{{states.input_slider.commode_brightness.state | int}}'
+heating_on_sleep:
+  alias: Reduce heater in living room at night
+  sequence:
+    - condition: state
+      entity_id: input_boolean.heating_master_switch
+      state: 'on'
+    - service: climate.set_temperature
+      data:
+        entity_id: climate.salon
+        temperature: 19
+        operation_mode: Heat
 
-# record_coin_salon:
-#   alias: Record coin_salon status to slider
-#   sequence:
-#     - service: input_slider.select_value
-#       data_template:
-#         entity_id: input_slider.coin_salon_brightness
-#         value: '{% if states.light.coin_salon.state == "off" %}0{% else %}{{states.light.coin_salon.attributes.brightness}}{% endif %}'
+heating_on_night:
+  alias: Reduce heater in bedroom at night
+  sequence:
+    - condition: state
+      entity_id: input_boolean.heating_master_switch
+      state: 'on'
+    - service: climate.set_temperature
+      data:
+        entity_id: climate.chambre
+        temperature: 19.5
+        operation_mode: Heat
 
-# return_coin_salon:
-#   alias: Return coin_salon to recorded value
+heating_off:
+  alias: Turn off the heaters
+  sequence:
+    - service: climate.set_temperature
+      data:
+        entity_id: climate.chambre
+        temperature: 8
+        operation_mode: Heat
+    - service: climate.set_temperature
+      data:
+        entity_id: climate.salon
+        temperature: 8
+        operation_mode: Heat
+
+# check_heater_status_11:
+#   alias: Check heater status and warn me when there is a discrepancy
 #   sequence:
-#     - service: light.turn_on
-#       entity_id: light.coin_salon
+#     - condition: state
+#       entity_id: light.qubino_chambre_level
+#       state: 'off'
+#     - condition: state
+#       entity_id: switch.qubino_chambre_switch
+#       state: 'on'
+#     - service: notify.pushbullet
 #       data_template:
-#         brightness: '{{states.input_slider.coin_salon_brightness.state.brightness | int}}'
+#         title: "Heater problem"
+#         message: >
+#           Chambre:
+#             light: {{states.light.qubino_chambre_level.state}}
+#             switch {{states.switch.qubino_chambre_switch.state}}
+
+# check_heater_status_12:
+#   alias: Check heater status and warn me when there is a discrepancy
+#   sequence:
+#     - condition: state
+#       entity_id: light.qubino_chambre_level
+#       state: 'on'
+#     - condition: state
+#       entity_id: switch.qubino_chambre_switch
+#       state: 'off'
+#     - service: notify.pushbullet
+#       data_template:
+#         title: "Heater problem"
+#         message: >
+#           Chambre:
+#             light: {{states.light.qubino_chambre_level.state}}
+#             switch {{states.switch.qubino_chambre_switch.state}}
+
+
+# check_heater_status_21:
+#   alias: Check heater status and warn me when there is a discrepancy
+#   sequence:
+#     - condition: state
+#       entity_id: light.qubino_salon_level
+#       state: 'off'
+#     - condition: state
+#       entity_id: switch.qubino_salon_switch
+#       state: 'on'
+#     - service: notify.pushbullet
+#       data_template:
+#         title: "Heater problem"
+#         message: >
+#           Salon:
+#             light: {{states.light.qubino_salon_level.state}}
+#             switch {{states.switch.qubino_salon_switch.state}}
+
+# check_heater_status_22:
+#   alias: Check heater status and warn me when there is a discrepancy
+#   sequence:
+#     - condition: state
+#       entity_id: light.qubino_salon_level
+#       state: 'on'
+#     - condition: state
+#       entity_id: switch.qubino_salon_switch
+#       state: 'off'
+#     - service: notify.pushbullet
+#       data_template:
+#         title: "Heater problem"
+#         message: >
+#           Salon:
+#             light: {{states.light.qubino_salon_level.state}}
+#             switch {{states.switch.qubino_salon_switch.state}}
+
+turn_light_on:
+  alias: Turn the proper light on
+  sequence:
+    - condition: template
+      value_template: '{{ room == "chambre" }}'
+    - service: light.turn_on
+      data_template:
+        entity_id: light.chambre
